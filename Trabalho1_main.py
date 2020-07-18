@@ -1,22 +1,73 @@
+from __future__ import print_function
 from leitura_dos_arquivos import processamento_dos_dados
+from ortools.linear_solver import pywraplp
 
+def Trabalho1_main():
 
-def main():
+    solver = pywraplp.Solver('Trabalho1_main', pywraplp.Solver.GLOP_LINEAR_PROGRAMMING)
 
-    _N_M_S_T_, _i_j_c_m_ = processamento_dos_dados('problema4.txt')
+    _N_M_S_T_, _i_j_c_m_ = processamento_dos_dados('problema.txt')
     
     i_do_arco_m = [origem[0] for origem in _i_j_c_m_]
     j_do_arco_m = [fim[1] for fim in _i_j_c_m_]
     c_m_do_arco = [fluxos[2] for fluxos in _i_j_c_m_]
 
-    print(i_do_arco_m)
-    print(j_do_arco_m)
-    print(c_m_do_arco)
-    print(_N_M_S_T_)
+
+    numero_de_nos = _N_M_S_T_[0]
+    numero_de_arcos = _N_M_S_T_[1]
+
+    varSolver = []
+    restricoes = []
 
     
+    #Criando as variáveis de cada arco para o solver
+    cont = 0
+    while(cont < numero_de_arcos):
+        varSolver.append(solver.NumVar(0, c_m_do_arco[cont], str(cont+1)))
+        cont+=1
 
+    #Criação do arco que liga o nó escoadouro até o nó de entrada
+    varSolver.append(solver.NumVar(0, solver.infinity(), 'X'))
+
+    cont = 2
+    cont_aux = 0
+    while(cont <= numero_de_nos):
+        cont_aux = 0
+        constraint = solver.Constraint(0, 0)
+        while(cont_aux < len(i_do_arco_m)):
+            if(cont == i_do_arco_m[cont_aux]):
+                constraint.SetCoefficient(varSolver[cont_aux], 1)
+            cont_aux+=1
+        cont_aux=0
+        while(cont_aux < len(j_do_arco_m)):
+            if(cont == j_do_arco_m[cont_aux]):
+                constraint.SetCoefficient(varSolver[cont_aux], -1)
+            cont_aux+=1
+        cont_aux=0
+        if(cont==numero_de_nos):
+            constraint.SetCoefficient(varSolver[len(varSolver)-1], 1)
+            restricoes.append(constraint)
+            cont+=1
+        else:
+            cont+=1
+            restricoes.append(constraint)
+            del constraint   
+
+    objective = solver.Objective()
+    objective.SetCoefficient(varSolver[len(varSolver)-1], -1)
+    objective.SetMinimization()
+
+    solver.Solve()
+    opt_solution = varSolver[len(varSolver)-1].solution_value()
+    print('Número de arcos =', solver.NumVariables())
+    print('Número de restrições =', solver.NumConstraints())
+    print('Solução (Arcos enumerados):')
+    cont=0
+    while(cont < len(varSolver)):
+        if(varSolver[cont].solution_value()!=0):
+            print(varSolver[cont].name(), ' : ', varSolver[cont].solution_value(), '/', varSolver[cont].ub())
+        cont+=1
+    print('Valor objetivo ótimo =', opt_solution)
         
-    
-if __name__ == "__main__":
-    main()
+Trabalho1_main()
+
