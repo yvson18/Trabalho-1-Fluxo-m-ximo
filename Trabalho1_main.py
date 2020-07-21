@@ -2,7 +2,7 @@ from __future__ import print_function
 from leitura_dos_arquivos import processamento_dos_dados
 from ortools.linear_solver import pywraplp
 
-def Trabalho1_main():
+def main():
 
     solver = pywraplp.Solver('Trabalho1_main', pywraplp.Solver.GLOP_LINEAR_PROGRAMMING) #Definindo o solver como variável
 
@@ -70,6 +70,7 @@ def Trabalho1_main():
             print(varSolver[cont].name(), ' : ', varSolver[cont].solution_value(), '/', varSolver[cont].ub())
         cont+=1
     print('Valor objetivo ótimo =', opt_solution)
-        
-Trabalho1_main()
 
+
+if __name__ == "__main__":
+    main()
